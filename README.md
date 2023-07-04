@@ -1,2 +1,2 @@
-# main.c
-Platformer where you control a mess of buggy colored lightning to destroy the world
+# lightning_sim
+A buggy simulator that gives out interesting results in C
