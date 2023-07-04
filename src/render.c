@@ -104,7 +104,30 @@ void DrawBoids(Boid boids[], SDL_Renderer *renderer, player myPlayer[], int came
     }
 }
 
+void DrawBoxes(HitBlock countBlocks[], int numhitbox, SDL_Renderer *renderer, int cameraX, int cameraY)
+{
+    for (int i = 0; i < numhitbox; i++)
+    {
+        Color color;
+        SDL_Rect rect = {
+            (countBlocks[i].rect.x - cameraX) ,
+            (countBlocks[i].rect.y - cameraY) ,
+            countBlocks[i].rect.width ,
+            countBlocks[i].rect.height 
+        };
 
+        if (countBlocks[i].hit > countBlocks[i].capacity)
+        {
+            countBlocks[i].hit = countBlocks[i].capacity;
+        }
+        color.r = mapValue(countBlocks[i].hit, 0, countBlocks[i].capacity, 0, 255);
+        color.g = mapValue(countBlocks[i].hit, 0, countBlocks[i].capacity, 255, 0);
+        color.b = 0;
+        countBlocks[i].hit = 0;
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+        SDL_RenderDrawRect(renderer, &rect);
+    }
+}
 void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Renderer *renderer, HitBlock countBlocks[], int numhitbox, int cameraX, int cameraY)
 {
 
@@ -112,9 +135,7 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     DrawBoids(boids, renderer, myPlayer, cameraX, cameraY);
-    (void)myPlayer;
 
-    Color color;
     // Draw blocks with camera offset and zoom
     for (int i = 0; i < numBlocks; i++)
     {
@@ -136,29 +157,14 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
     SDLTest_DrawString(renderer, x, y, message);
 
     // Draw hitboxes with camera offset and zoom
+    // DrawBoxes(countBlocks, numhitbox, renderer, cameraX, cameraY);
 /*     for(int i = 0 ; i < numhitbox ; i++)
     {
-        SDL_Rect rect = {
-            (countBlocks[i].rect.x - cameraX) ,
-            (countBlocks[i].rect.y - cameraY) ,
-            countBlocks[i].rect.width ,
-            countBlocks[i].rect.height 
-        };
 
-        if (countBlocks[i].hit > countBlocks[i].capacity)
-        {
-            countBlocks[i].hit = countBlocks[i].capacity;
-        }
-        color.r = mapValue(countBlocks[i].hit, 0, countBlocks[i].capacity, 0, 255);
-        color.g = mapValue(countBlocks[i].hit, 0, countBlocks[i].capacity, 255, 0);
-        color.b = 0;
-        countBlocks[i].hit = 0;
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-        SDL_RenderDrawRect(renderer, &rect);
     }
  */
     (void)numhitbox;
     (void)countBlocks;
-    (void)color;
+
     SDL_RenderPresent(renderer);
 }
