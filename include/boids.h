@@ -9,9 +9,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_test_font.h>
 
-#define numBoids  50
-#define screenHeight  1500
-#define screenWidth  2500
+
+#define numBoids  200// 700 is big for some reasons 27 is the min cap?
+#define screenHeight  900
+#define screenWidth  1800
 /* 
 #if defined(__cplusplus)
     #define CLITERAL(type)      type
@@ -48,7 +49,15 @@ typedef struct Block
     Vector2 position;
     Vector2 size;
     Rectangle rect;
+    int type;
 } Block;
+
+enum e_type
+{
+    hitbox,
+    boidbox,
+    end
+};
 
 typedef struct HitBlock
 {
@@ -59,6 +68,7 @@ typedef struct HitBlock
     int capacity;
     double permuability;
     double absorbtion;
+    int type;
 } HitBlock;
 
 typedef struct Boid{
@@ -80,7 +90,18 @@ typedef struct player
     Vector2 position;
     Vector2 speed;
     int size;
+    int in_the_end;//linkin park
     int grounded;
+    int is_in_block;
+    int timer;
+    int score;
+    int end_time;
+    int clock;
+    double gravity;
+    Vector2 shell[numBoids * 20];
+    int shell_count;
+    int camera_type;
+
 }player;
 
 typedef struct boidParameters
@@ -94,7 +115,7 @@ typedef struct boidParameters
 
 
 
-void Update(Boid boids[], Vector2 mousepos, params p);
+void Update(Boid boids[], Vector2 mousepos, params p, int teleport);
 unsigned short *get_screen_size(void);
 
 Color colorBoids(Boid* boid);
@@ -109,14 +130,14 @@ float mapValue(float value, float inputMin, float inputMax, float outputMin, flo
 
 Vector2 subtractvect(Vector2 a, Vector2 b);
 
-void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Renderer *renderer, HitBlock countBlocks[], int numhitbox, int cameraX, int cameraY);
-
-void Control(Vector2* mousepos, int* teleport, Vector2* teleportPos, player* myPlayer, params* p, int cameraX, int cameraY, Boid boids[]);
-
+void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Renderer *renderer, HitBlock countBlocks[], int numhitbox, int cameraX, int cameraY, params p[], double zoom, int pause);
+void Control(Vector2* mousepos, int* teleport, Vector2* teleportPos, player* myPlayer, params* p, int cameraX, int cameraY, Boid boids[], double zoom, Block blocks[], int numBlocks);
 
 void Movement(player* myPlayer);
 
-void InitBoids(Boid boids[]);
+void InitBoids(Boid boids[], player myPlayer[]);
 void initPLayer(player *myPlayer, params *p, Vector2 *prevPos, Vector2 *teleportPos, int *teleport);
-void InitBlocks(Block blocks[],HitBlock countBox[], int numBlocks);
+void InitBlocks(Block *blocks,HitBlock *countBox, int numBlocks[], player Myplayer[]);
+
+void convexHull(Boid boids[], player myPlayer[]);
 #endif

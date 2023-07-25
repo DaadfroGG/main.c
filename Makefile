@@ -13,7 +13,8 @@ SRCS            = src/main.c \
 				src/math_utils.c \
 				src/render.c \
 				src/control.c \
-				src/init.c
+				src/init.c \
+				src/hull.c
                         
 
 SRCH_INCLDS     = -Iinclude

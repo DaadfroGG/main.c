@@ -2,17 +2,19 @@
 
 
 
-void InitBoids(Boid boids[])
+void InitBoids(Boid boids[], player myPlayer[])
 {
     srand(time(NULL));
     for (int i = 0; i < numBoids; i++) 
     {
-        boids[i].x = rand() % screenWidth;
-        boids[i].y = rand() % screenHeight;
+        // boids[i].x = rand() % screenWidth;
+        // boids[i].y = rand() % screenHeight;
+        boids[i].x = myPlayer->position.x + rand() % 100 - 50;
+        boids[i].y = myPlayer->position.y + rand() % 100 - 50;
         boids[i].angle = rand() % 360;
         boids[i].move_speed= (rand() % 1000) / 100;
         boids[i].species = i;
-        boids[i].alive = 1;
+        boids[i].alive = 0;
         for (int j = 0; j < 20; j++) 
         {
             boids[i].prevPositions[j] = (Vector2){boids[i].x, boids[i].y};
@@ -23,43 +25,135 @@ void InitBoids(Boid boids[])
 
 void initPLayer(player *myPlayer, params *p, Vector2 *prevPos, Vector2 *teleportPos, int *teleport)
 {
-    p[0] = (params){1,100, 20, 10, 40};
-    myPlayer->position = (Vector2){ screenWidth / 2, screenHeight / 2 };
+    p[0] = (params){1,100, 20, 10, 100};//last one is general speed of boids //100 is the collide value
     myPlayer->speed = (Vector2){ 0, 0 };
     myPlayer->size = 10;
     prevPos[0] = myPlayer->position;
     teleportPos[0] = myPlayer->position;
     teleport[0] = 0;
     myPlayer->grounded = 0;
+    myPlayer->is_in_block = 0;
+    
+    myPlayer->in_the_end = 0;
+    myPlayer->score = 0;
+    myPlayer->clock =  SDL_GetTicks();
+    myPlayer->end_time = 0;
+    myPlayer->gravity = 1;
+    myPlayer->shell_count = 0;
+    myPlayer->camera_type = 0;
+
 }
-void InitBlocks(Block blocks[],HitBlock countBox[], int numBlocks)
+
+/* Rectangles:
+Rectangle 1:
+    Top-left corner position: (91.00, 34.00)
+    Width: 388.00
+    Height: 367.00
+
+Rectangle 2:
+    Top-left corner position: (558.00, 416.00)
+    Width: 176.00
+    Height: 177.00
+
+Rectangle 3:
+    Top-left corner position: (691.00, 179.00)
+    Width: -4.00
+    Height: 230.00 */
+/* 
+    enum e_type
+{
+    boidbox,
+    hitbox,
+    deathbox,
+    end
+}; */
+
+void InitBlocksFromFile(Block blocks[], HitBlock countBox[], int numBlocks[], player myPlayer[], const char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Failed to open file: %s\n", filename);
+     
+        return;
+    }
+    
+    char line[256];
+    int lineCount = 0;
+    int blockIndex = 0;
+    if (fgets(line, sizeof(line), file) != NULL)
+    {
+        lineCount++;
+        float playerX, playerY;
+        if (sscanf(line, "%f,%f", &playerX, &playerY) == 2)
+        {
+            myPlayer->position.x = playerX;
+            myPlayer->position.y = playerY;
+        }
+        else
+        {
+            fprintf(stderr, "Invalid player starting position format in file %s at line %d\n", filename, lineCount);
+        }
+    }
+    while (fgets(line, sizeof(line), file) != NULL) {
+        lineCount++;
+        
+        // Ignore empty lines and comments starting with '#'
+        if (line[0] == '\n' || line[0] == '#')
+            continue;
+        
+        // Parse rectangle parameters from the line
+        float x, y, width, height;
+        int type;
+        if (sscanf(line, "%f, %f, %f, %f, %d", &x, &y, &width, &height, &type) != 5) {
+            fprintf(stderr, "Invalid rectangle format in file %s at line %d\n", filename, lineCount);
+            continue;
+        }
+        
+        // Initialize the block and countBox with the parsed parameters
+        blocks[blockIndex].position = (Vector2){ x, y };
+        blocks[blockIndex].size = (Vector2){ width, height };
+        blocks[blockIndex].rect = (Rectangle){ x, y, width, height };
+        blocks[blockIndex].type = type;
+        countBox[blockIndex].position = (Vector2){ x - 100, y - 100 };
+        countBox[blockIndex].size = (Vector2){ width + 200, height + 200 };
+        countBox[blockIndex].rect = (Rectangle){ countBox[blockIndex].position.x, countBox[blockIndex].position.y, countBox[blockIndex].size.x, countBox[blockIndex].size.y };
+        countBox[blockIndex].hit = 0;
+        countBox[blockIndex].type = type;
+        if (type == boidbox)
+        {
+            countBox[blockIndex].capacity = numBoids / 2;
+            countBox[blockIndex].permuability = 0;
+            countBox[blockIndex].absorbtion = 0;
+        }
+        else if (type == end)
+        {
+            countBox[blockIndex].capacity = numBoids / 2;
+            countBox[blockIndex].permuability = 0;
+            countBox[blockIndex].absorbtion = 0;
+        }
+        else if (type == hitbox)
+        {
+            countBox[blockIndex].capacity = numBoids / 2;
+            countBox[blockIndex].permuability = 1;
+            countBox[blockIndex].absorbtion = 1;
+        }
+    /* countBox[blockIndex].capacity = numBoids / 2;
+    countBox[blockIndex].permuability = 1;
+     */ 
+        blockIndex++;
+    }
+    numBlocks[0] = blockIndex;
+    
+    
+    fclose(file);
+
+}
+
+
+void InitBlocks(Block *blocks,HitBlock *countBox, int numBlocks[], player myPlayer[])
 {
     // walls
-    blocks[0].position = (Vector2){ 0, 0 };;
-    blocks[0].size = (Vector2){ 700, 20 };
-    blocks[0].rect = (Rectangle){ blocks[0].position.x, blocks[0].position.y, blocks[0].size.x, blocks[0].size.y };
-    blocks[1].position = (Vector2){ 0, 0 };;
-    blocks[1].size = (Vector2){ 20, screenHeight };
-    blocks[1].rect = (Rectangle){ blocks[1].position.x, blocks[1].position.y, blocks[1].size.x, blocks[1].size.y };
-    blocks[2].position = (Vector2){ screenWidth - 20, 0 };
-    blocks[2].size = (Vector2){ 20, screenHeight };
-    blocks[2].rect = (Rectangle){ blocks[2].position.x, blocks[2].position.y, blocks[2].size.x, blocks[2].size.y };
-    blocks[3].position = (Vector2){ 0, screenHeight - 20 };
-    blocks[3].size = (Vector2){ screenWidth, 20 };
-    blocks[3].rect = (Rectangle){ blocks[3].position.x, blocks[3].position.y, blocks[3].size.x, blocks[3].size.y };
-    //plateforms
-    blocks[4].position = (Vector2){ 800, 200 };
-    blocks[4].size = (Vector2){ 200, 20 };
-    blocks[4].rect = (Rectangle){ blocks[4].position.x, blocks[4].position.y, blocks[4].size.x, blocks[4].size.y };
-    blocks[5].position = (Vector2){ 400, 300 };
-    blocks[5].size = (Vector2){ 200, 20 };
-    blocks[5].rect = (Rectangle){ blocks[5].position.x, blocks[5].position.y, blocks[5].size.x, blocks[5].size.y };
-    blocks[6].position = (Vector2){ 100, 400 };
-    blocks[6].size = (Vector2){ 200, 20 };
-    blocks[6].rect = (Rectangle){ blocks[6].position.x, blocks[6].position.y, blocks[6].size.x, blocks[6].size.y };
-    blocks[7].position = (Vector2){ 0, screenHeight - 150 };
-    blocks[7].size = (Vector2){ screenWidth - 100, 20 };
-    blocks[7].rect = (Rectangle){ blocks[7].position.x, blocks[7].position.y, blocks[7].size.x, blocks[7].size.y };
+    InitBlocksFromFile(blocks, countBox, numBlocks, myPlayer, "level.txt");
 /* 
         countBox[0].position = (Vector2){ 760, 160 };
     countBox[0].size = (Vector2){ 280, 100 };
@@ -77,15 +171,5 @@ void InitBlocks(Block blocks[],HitBlock countBox[], int numBlocks)
     countBox[2].hit = 0;
     countBox[2].capacity = numBoids/2; */
     //can use formula instead of hardcoding
-    for (int i = 0; i < numBlocks; i++) 
-    {
-        countBox[i].position = (Vector2){ blocks[i].position.x - 40, blocks[i].position.y - 40 };
-        countBox[i].size = (Vector2){ blocks[i].size.x + 80, blocks[i].size.y + 80 };
-        countBox[i].rect = (Rectangle){ countBox[i].position.x, countBox[i].position.y, countBox[i].size.x, countBox[i].size.y };
-        countBox[i].hit = 0;
-        countBox[i].capacity = numBoids/2;
-        countBox[i].permuability = 1;
-        countBox[i].absorbtion = 1;
-    }
     (void)numBlocks;
 }

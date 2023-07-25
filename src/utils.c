@@ -25,6 +25,10 @@ void updateBoidBehavior(Boid *boids, Vector2 mousepos, double cohesion)
     {
         double angleToMouse = atan2(mousepos.y - boids[i].y, mousepos.x - boids[i].x);
         boids[i].angle = (1 - cohesion) * boids[i].angle + cohesion * angleToMouse;
+
+        double distanceToMouse = sqrt(pow(mousepos.x - boids[i].x, 2) + pow(mousepos.y - boids[i].y, 2));
+
+        boids[i].move_speed = boids[i].move_speed + distanceToMouse/(distanceToMouse + 100);
     }
 }
 
@@ -48,7 +52,7 @@ void avoidBoids(Boid *boids, int spacing)
     }
 }
 
-void updateFollowing(Boid* boids, int cohesion, int speed)
+void updateFollowing(Boid* boids, int cohesion, int speed, int teleport)
 {
     for (int i = 0; i < numBoids; i++)
     {
@@ -79,6 +83,14 @@ void updateFollowing(Boid* boids, int cohesion, int speed)
         centerofmass.y /= numBoids;
         boids[i].angle += atan2(centerofmass.y - currentBoid.y, centerofmass.x - currentBoid.x)/4;
         }
+        if (teleport)
+            boids[i].move_speed = (rand() % 10000) / 50;
+        else{
+        boids[i].move_speed -= (rand() % 10000) / 5000;
+        boids[i].move_speed += (rand() % 10000) / 5000;
+        }
+        (void)teleport;
+        
     }
 }
 
@@ -111,7 +123,21 @@ void updateCohesionSpeed(Boid* boids, int cohesion)
         }
     }
 }
-void Update(Boid boids[], Vector2 mousepos, params p)
+/* typedef struct Boid{
+    int x;
+    int y;
+    double move_speed;
+    double angle;
+    double m_speed;
+    double m_angle;
+    int species;
+    int count;
+    int alive;
+    Color color;
+    Vector2 prevPositions[20];
+}Boid;
+ */
+void Update(Boid boids[], Vector2 mousepos, params p, int teleport)
 {
     moveBoids(boids);
    // handleCollision(boids, blocks, numBlocks);
@@ -123,11 +149,11 @@ void Update(Boid boids[], Vector2 mousepos, params p)
             boids[i].prevPositions[j] = boids[i].prevPositions[j + 1];
         }
         boids[i].prevPositions[19] = (Vector2){ boids[i].x, boids[i].y };
-    }
+    }//myPlayer->x, boids[0].move_speed = 0;
     updateBoidBehavior(boids, mousepos, p.general_behavior); //values between 1 and 2 are most stable
     updateCohesionSpeed(boids, p.cohesion_distance);
     avoidBoids(boids, p.avoid_distance);
-    updateFollowing(boids, p.follow_distance, p.follow_move_speed);
+    updateFollowing(boids, p.follow_distance, p.follow_move_speed, teleport);
 
 
 }
