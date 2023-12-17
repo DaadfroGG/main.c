@@ -13,6 +13,9 @@
 #define numBoids  200// 700 is big for some reasons 27 is the min cap?
 #define screenHeight  900
 #define screenWidth  1800
+
+#define FPS 60
+#define FRAME_DELAY (1000 / FPS)
 /* 
 #if defined(__cplusplus)
     #define CLITERAL(type)      type
@@ -132,8 +135,12 @@ Vector2 subtractvect(Vector2 a, Vector2 b);
 
 void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Renderer *renderer, HitBlock countBlocks[], int numhitbox, int cameraX, int cameraY, params p[], double zoom, int pause);
 void Control(Vector2* mousepos, int* teleport, Vector2* teleportPos, player* myPlayer, params* p, int cameraX, int cameraY, Boid boids[], double zoom, Block blocks[], int numBlocks);
+void  Physics(player* myPlayer, Block blocks[], HitBlock countBlock[], int numBlocks, Boid boids[]);
+void BoidCollision(Boid boids[], HitBlock countBox[], int numBlocks, player myPlayer[]);
 
 void Movement(player* myPlayer);
+
+
 
 void InitBoids(Boid boids[], player myPlayer[]);
 void initPLayer(player *myPlayer, params *p, Vector2 *prevPos, Vector2 *teleportPos, int *teleport);

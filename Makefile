@@ -1,6 +1,6 @@
 NAME            = main
 
-CC              = gcc -Werror -Wextra -Wall -MMD
+CC              = gcc  -Werror -Wextra -Wall -MMD
 
 LIBS            = -lSDL2  -lSDL2_test -lm   # -fsanitize=address
 
@@ -14,7 +14,8 @@ SRCS            = src/main.c \
 				src/render.c \
 				src/control.c \
 				src/init.c \
-				src/hull.c
+				src/hull.c \
+				src/physics.c
                         
 
 SRCH_INCLDS     = -Iinclude

@@ -260,10 +260,10 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
         SDLTest_DrawString(renderer, 400, 100, message);
     }
     // Draw hitboxes with camera offset and zoom
-    //DrawBoxes(countBlocks, numhitbox, renderer, cameraX, cameraY, zoom);
+    // DrawBoxes(countBlocks, numhitbox, renderer, cameraX, cameraY, zoom);
     DrawBoids(boids, renderer, myPlayer, cameraX, cameraY, zoom);
     DrawStats(myPlayer, renderer);
-    //DrawHull(myPlayer, renderer, cameraX, cameraY, zoom);
+    DrawHull(myPlayer, renderer, cameraX, cameraY, zoom);
     (void)numhitbox;
     (void)countBlocks;
 
