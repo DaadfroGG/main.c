@@ -232,6 +232,7 @@ int main(void) {
     Vector2 teleportPos[1];
     int teleport[1];
     int numBlocks[1];
+    // Vector2 cameraTether[15]; //curve defining the camera's authorised movement
     numBlocks[0] = 600; 
     //int zoom = 0.5;
     params p[1];
@@ -239,22 +240,12 @@ int main(void) {
     HitBlock countBox[numBlocks[0]];
     const int camera_switch = 200;
     int camera_switch_timer = 0;
-    /*     blocks[4].position = (Vector2){ 800, 200 };
-    blocks[4].size = (Vector2){ 200, 20 };
-    blocks[4].rect = (Rectangle){ blocks[4].position.x, blocks[4].position.y, blocks[4].size.x, blocks[4].size.y };
-    blocks[5].position = (Vector2){ 400, 300 };
-    blocks[5].size = (Vector2){ 200, 20 };
-    blocks[5].rect = (Rectangle){ blocks[5].position.x, blocks[5].position.y, blocks[5].size.x, blocks[5].size.y };
-    blocks[6].position = (Vector2){ 100, 400 };
-    blocks[6].size = (Vector2){ 200, 20 };
-    blocks[6].rect = (Rectangle){ blocks[6  ].position.x, blocks[6].position.y, blocks[6].size.x, blocks[6].size.y }; */
-    //the formula for passing from block coordinates to hitbox coordinates is: hitbox.x = block.x + block.width/2 - hitbox.width/2
-
 
     // Initialize boids and blocks
     InitBlocks(blocks, countBox, numBlocks, myPlayer);
     initPLayer(myPlayer, p, prevPos, teleportPos, teleport);
     InitBoids(boids, myPlayer);
+
     Vector2 start_pos = myPlayer->position;
     // Set initial parameters for the player
     // Game loop

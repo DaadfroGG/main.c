@@ -1,57 +1,5 @@
 #include <boids.h>
 
-
-
-/* void Movement(player* myPlayer)
-{
-    const Uint8* keyboardState = SDL_GetKeyboardState(NULL);
-    int jump_speed = 40;
-    int cap_speed = 100;
-    int move_speed = cap_speed;
-    myPlayer->speed.y += myPlayer->gravity; // Apply myPlayer->gravity
-    if (keyboardState[SDL_SCANCODE_D])
-    {
-        myPlayer->speed.x += -move_speed;
-    }
-    else if (keyboardState[SDL_SCANCODE_A])
-    {
-        myPlayer->speed.x += move_speed;
-    }
-    //
-
-    // Handle jumping
-    if (SDL_GetKeyboardState(NULL)[SDL_SCANCODE_W] && SDL_GetKeyboardState(NULL)[SDL_SCANCODE_S])
-    {
-        myPlayer->speed.y = 0;
-    }
-    else if (keyboardState[SDL_SCANCODE_W])
-    {
-        myPlayer->speed.y = -jump_speed;
-    }
-    else if (keyboardState[SDL_SCANCODE_S])
-    {
-        myPlayer->speed.y = jump_speed;
-    }
-    myPlayer->speed.x = sqrt(pow(myPlayer->speed.x, 2)) * (myPlayer->speed.x > 0 ? -1 : 1) * 0.9;
-    
-    //recude speed exponentially
-    myPlayer->speed.x *= 0.70;
-    //add or substract randomness to position
-
-        //instead of that use a reverse log function
-        //cap speed both positive and negative
-    if (myPlayer->speed.x > cap_speed)
-    {
-        myPlayer->speed.x = cap_speed;
-    }
-    else if (myPlayer->speed.x < -cap_speed)
-    {
-        myPlayer->speed.x = -cap_speed;
-    }
-
-}  */
-
-
 void Movement(player* myPlayer)
 {
     const Uint8* keyboardState = SDL_GetKeyboardState(NULL);

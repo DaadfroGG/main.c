@@ -103,8 +103,7 @@ void	InitBlocksFromFile(Block blocks[], int numBlocks[],
 		}
 		else
 		{
-			fprintf(stderr, "Invalid player starting position format in file
-					%s at line %d\n", filename, lineCount);
+			fprintf(stderr, "Invalid player starting position format in file %s at line %d\n", filename, lineCount);
 		}
 	}
 	while (fgets(line, sizeof(line), file) != NULL)
@@ -162,9 +161,7 @@ void	OutputBlocktoFile(Block blocks[], int numBlocks, const char *filename)
 
 int	main(int ac, char *av[])
 {
-	printf("you can load a map by passing the file name as an argument\nIf no argument is passed,
-			a new map will be created\nYou can specify the output file name by passing it as a second argument\nIf no argument is passed,
-			the map will be saved as \"level.txt\"\n");
+	printf("you can load a map by passing the file name as an argument\nIf no argument is passed, a new map will be created\nYou can specify the output file name by passing it as a second argument\nIf no argument is passed, the map will be saved as \"level.txt\"\n");
 	// Initialize SDL
 	SDL_Init(SDL_INIT_VIDEO);
 	// Create a window
@@ -342,8 +339,7 @@ int	main(int ac, char *av[])
 					dragging = false;
 					endX = worldMousePos.x;
 					endY = worldMousePos.y;
-					// Create a rectangle based on the starting and ending positions (if the values are negative,
-							offset them to the left/top of the rectangle)
+					// Create a rectangle based on the starting and ending positions (if the values are negative, offset them to the left/top of the rectangle)
 					Block newBlock;
 					newBlock.position.x = fmin(startX, endX);
 					newBlock.position.y = fmin(startY, endY);

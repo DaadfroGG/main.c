@@ -44,29 +44,6 @@ void initPLayer(player *myPlayer, params *p, Vector2 *prevPos, Vector2 *teleport
 
 }
 
-/* Rectangles:
-Rectangle 1:
-    Top-left corner position: (91.00, 34.00)
-    Width: 388.00
-    Height: 367.00
-
-Rectangle 2:
-    Top-left corner position: (558.00, 416.00)
-    Width: 176.00
-    Height: 177.00
-
-Rectangle 3:
-    Top-left corner position: (691.00, 179.00)
-    Width: -4.00
-    Height: 230.00 */
-/* 
-    enum e_type
-{
-    boidbox,
-    hitbox,
-    deathbox,
-    end
-}; */
 
 void InitBlocksFromFile(Block blocks[], HitBlock countBox[], int numBlocks[], player myPlayer[], const char *filename)
 {
