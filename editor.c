@@ -53,7 +53,7 @@ typedef struct Block
 	int			type;
 }				Block;
 
-#define MAX_BLOCKS 100
+#define MAX_BLOCKS 1000
 
 Block			blocks[MAX_BLOCKS];
 int				blockCount = 0;
