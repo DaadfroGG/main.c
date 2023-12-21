@@ -197,15 +197,108 @@ void DrawPoly(SDL_Renderer *renderer, SDL_Vertex vertices[], int numVertices)
     SDL_RenderGeometry(renderer, NULL, vertices, numVertices, NULL, 0);
 }
 
+void SortBoxes(__attribute__((unused))Block blocks[], __attribute__((unused))int numBlocks, __attribute__((unused))int cameraX, __attribute__((unused))int cameraY, __attribute__((unused))double zoom)
+{
+    // Get the block distances to the camera
+}
+
+void SwapFaces(SDL_Vertex faces[5][2][3], int face1, int face2)
+{
+    SDL_Vertex temp[2][3];
+    temp[0][0] = faces[face1][0][0];
+    temp[0][1] = faces[face1][0][1];
+    temp[0][2] = faces[face1][0][2];
+    temp[1][0] = faces[face1][1][0];
+    temp[1][1] = faces[face1][1][1];
+    temp[1][2] = faces[face1][1][2];
+    faces[face1][0][0] = faces[face2][0][0];
+    faces[face1][0][1] = faces[face2][0][1];
+    faces[face1][0][2] = faces[face2][0][2];
+    faces[face1][1][0] = faces[face2][1][0];
+    faces[face1][1][1] = faces[face2][1][1];
+    faces[face1][1][2] = faces[face2][1][2];
+    faces[face2][0][0] = temp[0][0];
+    faces[face2][0][1] = temp[0][1];
+    faces[face2][0][2] = temp[0][2];
+    faces[face2][1][0] = temp[1][0];
+    faces[face2][1][1] = temp[1][1];
+    faces[face2][1][2] = temp[1][2];
+}
+
+
+void InitFaces(SDL_Vertex faces[5][2][3], SDL_Rect front_rect, SDL_Rect back_rect, Color color)
+{
+
+    //draw the left face
+    color = (Color){0, 0, 255, 255};
+    SDL_Vertex left[2][3];//left side face, connect the two lefts of the front_rect and back faces
+    NewTriangleVertex((Vector2[]){{front_rect.x, front_rect.y}, {back_rect.x, back_rect.y}, {back_rect.x, back_rect.y + back_rect.h}}, left[0], color);
+    NewTriangleVertex((Vector2[]){{front_rect.x, front_rect.y}, {front_rect.x, front_rect.y + front_rect.h}, {back_rect.x, back_rect.y + back_rect.h}}, left[1], color);
+    faces[0][0][0] = left[0][0];
+    faces[0][0][1] = left[0][1];
+    faces[0][0][2] = left[0][2];
+    faces[0][1][0] = left[1][0];
+    faces[0][1][1] = left[1][1];
+    faces[0][1][2] = left[1][2];
+    //draw the right face
+    color = (Color){255, 255, 0, 255};
+    SDL_Vertex right[2][3];//right side face, connect the two rights of the front_rect and back faces
+    NewTriangleVertex((Vector2[]){{front_rect.x + front_rect.w, front_rect.y}, {back_rect.x + back_rect.w, back_rect.y}, {back_rect.x + back_rect.w, back_rect.y + back_rect.h}}, right[0], color);
+    NewTriangleVertex((Vector2[]){{front_rect.x + front_rect.w, front_rect.y}, {front_rect.x + front_rect.w, front_rect.y + front_rect.h}, {back_rect.x + back_rect.w, back_rect.y + back_rect.h}}, right[1], color);
+    faces[1][0][0] = right[0][0];
+    faces[1][0][1] = right[0][1];
+    faces[1][0][2] = right[0][2];
+    faces[1][1][0] = right[1][0];
+    faces[1][1][1] = right[1][1];
+    faces[1][1][2] = right[1][2];
+    //draw the up face
+    color = (Color){0, 255, 0, 255};
+    SDL_Vertex up[2][3];//up side face, connect the two tops of the front_rect and back faces
+    NewTriangleVertex((Vector2[]){{front_rect.x, front_rect.y}, {front_rect.x + front_rect.w, front_rect.y}, {back_rect.x, back_rect.y}}, up[0], color);
+    NewTriangleVertex((Vector2[]){{front_rect.x + front_rect.w, front_rect.y}, {back_rect.x + back_rect.w, back_rect.y}, {back_rect.x, back_rect.y}}, up[1], color);
+    faces[2][0][0] = up[0][0];
+    faces[2][0][1] = up[0][1];
+    faces[2][0][2] = up[0][2];
+    faces[2][1][0] = up[1][0];
+    faces[2][1][1] = up[1][1];
+    faces[2][1][2] = up[1][2];
+    //draw the down face
+    color = (Color){255, 0, 0, 255};
+    SDL_Vertex down[2][3];//down side face, connect the two bottoms of the front_rect and back faces
+    NewTriangleVertex((Vector2[]){{front_rect.x, front_rect.y + front_rect.h}, {front_rect.x + front_rect.w, front_rect.y + front_rect.h}, {back_rect.x, back_rect.y + back_rect.h}}, down[0], color);
+    NewTriangleVertex((Vector2[]){{front_rect.x + front_rect.w, front_rect.y + front_rect.h}, {back_rect.x + back_rect.w, back_rect.y + back_rect.h}, {back_rect.x, back_rect.y + back_rect.h}}, down[1], color);
+    faces[3][0][0] = down[0][0];
+    faces[3][0][1] = down[0][1];
+    faces[3][0][2] = down[0][2];
+    faces[3][1][0] = down[1][0];
+    faces[3][1][1] = down[1][1];
+    faces[3][1][2] = down[1][2];
+
+    //draw the front face
+    //set color to white
+    color = (Color){255, 255, 255, 255};
+    SDL_Vertex front[2][3];//front side face
+    NewTriangleVertex((Vector2[]){{front_rect.x, front_rect.y}, {front_rect.x + front_rect.w, front_rect.y}, {front_rect.x, front_rect.y + front_rect.h}}, front[0], color);
+    NewTriangleVertex((Vector2[]){{front_rect.x + front_rect.w, front_rect.y}, {front_rect.x + front_rect.w, front_rect.y + front_rect.h}, {front_rect.x, front_rect.y + front_rect.h}}, front[1], color);
+    faces[4][0][0] = front[0][0];
+    faces[4][0][1] = front[0][1];
+    faces[4][0][2] = front[0][2];
+    faces[4][1][0] = front[1][0];
+    faces[4][1][1] = front[1][1];
+    faces[4][1][2] = front[1][2];
+
+}
+
 void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int cameraX, int cameraY, double zoom)
 {
+    SortBoxes(blocks, numBlocks, cameraX, cameraY, zoom);
     for (int i = 0; i < numBlocks; i++)
     {   
 
             Color color_line;
             Color color;
             double offsetX = 70;
-            double offsetY = 0;
+            double offsetY = 55;
             if (blocks[i].type == hitbox)
                 color_line = (Color){255, 0, 0, 255};
             else if (blocks[i].type == boidbox)
@@ -213,48 +306,32 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
             else if (blocks[i].type == end)
                 color_line = (Color){0, 255, 0, 255};
             color = (Color){0, 0, 0, 255};
-            // SDL_Vertex face2[2][3];// no need for back face
-            // NewBlockVertex((SDL_Rect){
-            //     (blocks[i].rect.x - cameraX) * zoom * 0.9 + 150,
-            //     (blocks[i].rect.y - cameraY) * zoom * 0.9 + 70,
-            //     blocks[i].rect.width * zoom * 0.9,
-            //     blocks[i].rect.height * zoom * 0.9
-            // }, face2, color);
-            // DrawTriangle(renderer, face2[0], color);
-            //draw outline of the back face
             SDL_SetRenderDrawColor(renderer, color_line.r, color_line.g, color_line.b, color_line.a);
-            /* SDL_RenderDrawRect(renderer, &(SDL_Rect){
-                (blocks[i].rect.x - cameraX) * zoom * 0.9 + 150,
-                (blocks[i].rect.y - cameraY) * zoom * 0.9 + 70,
-                blocks[i].rect.width * zoom * 0.9,
-                blocks[i].rect.height * zoom * 0.9
-            }); 
-            REMMERBER TO ADD THICKNESS TO THE OUTLINE
-            */
            int line_thickness = 1;
-           SDL_Rect front = {
-               (blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX,
-               (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY,
-               blocks[i].rect.width * zoom * 1.1,
-               blocks[i].rect.height * zoom * 1.1
+           double zoom_offset = 0.1;
+           SDL_Rect front_rect = {
+               (blocks[i].rect.x - cameraX) * zoom * (1 + zoom_offset) - offsetX,
+                (blocks[i].rect.y - cameraY) * zoom * (1 + zoom_offset) - offsetY,
+                blocks[i].rect.width * zoom * (1 + zoom_offset),
+                blocks[i].rect.height * zoom * (1 + zoom_offset)
            };
-              SDL_Rect back = {
-                (blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX,
-                (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY,
-                blocks[i].rect.width * zoom * 0.9,
-                blocks[i].rect.height * zoom * 0.9
+              SDL_Rect back_rect = {
+                (blocks[i].rect.x - cameraX) * zoom * (1 - zoom_offset) + offsetX,
+                (blocks[i].rect.y - cameraY) * zoom * (1 - zoom_offset) + offsetY,
+                blocks[i].rect.width * zoom * (1 - zoom_offset),
+                blocks[i].rect.height * zoom * (1 - zoom_offset)
               };
             SDL_Rect backOutline = {
-                back.x - line_thickness,
-                back.y - line_thickness,
-                back.w + (line_thickness * 4),
-                back.h + (line_thickness * 4)
+                back_rect.x - line_thickness,
+                back_rect.y - line_thickness,
+                back_rect.w + (line_thickness * 4),
+                back_rect.h + (line_thickness * 4)
             };
             SDL_Rect frontOutline = {
-                front.x - line_thickness,
-                front.y - line_thickness,
-                front.w + (line_thickness * 4),
-                front.h + (line_thickness * 4)
+                front_rect.x - line_thickness,
+                front_rect.y - line_thickness,
+                front_rect.w + (line_thickness * 4),
+                front_rect.h + (line_thickness * 4)
             };
            SDL_RenderDrawRect(renderer, &backOutline);
             //draw lines connecting the front face to the back face
@@ -270,83 +347,72 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
             SDL_RenderDrawLine(renderer,
                 backOutline.x + backOutline.w, backOutline.y + backOutline.h,
                 frontOutline.x + frontOutline.w, frontOutline.y + frontOutline.h);
-            //draw the front face
-            SDL_Vertex face2[2][3];//first side face
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9}
-            }, face2[0], color);
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9},
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1}
-            }, face2[1], color);
-            DrawTriangle(renderer, face2[0], color);
-            DrawTriangle(renderer, face2[1], color);
-            SDL_Vertex face3[2][3];//second side face
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX + blocks[i].rect.width * zoom * 1.1, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9}
-            }, face3[0], color);
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX + blocks[i].rect.width * zoom * 1.1, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9},
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX + blocks[i].rect.width * zoom * 1.1, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1}
-            }, face3[1], color);
-            DrawTriangle(renderer, face3[0], color);
-            DrawTriangle(renderer, face3[1], color);
-            SDL_Vertex face4[2][3];//third side face
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9}
-            }, face4[0], color);
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9},
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX + blocks[i].rect.width * zoom * 1.1, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1}
-            }, face4[1], color);
-            DrawTriangle(renderer, face4[0], color);
-            DrawTriangle(renderer, face4[1], color);
-            SDL_Vertex face5[2][3];//top face
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX + blocks[i].rect.width * zoom * 1.1, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX + blocks[i].rect.width * zoom * 1.1, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1}
-            }, face5[0], color);
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX + blocks[i].rect.width * zoom * 1.1, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1},
-                {(blocks[i].rect.x - cameraX) * zoom * 1.1 - offsetX, (blocks[i].rect.y - cameraY) * zoom * 1.1 - offsetY + blocks[i].rect.height * zoom * 1.1}
-            }, face5[1], color);
-            DrawTriangle(renderer, face5[0], color);
-            DrawTriangle(renderer, face5[1], color);
-            SDL_Vertex face6[2][3];//bottom face
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9}
-            }, face6[0], color);
-            NewTriangleVertex((Vector2[]){
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX + blocks[i].rect.width * zoom * 0.9, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9},
-                {(blocks[i].rect.x - cameraX) * zoom * 0.9 + offsetX, (blocks[i].rect.y - cameraY) * zoom * 0.9 + offsetY + blocks[i].rect.height * zoom * 0.9}
-            }, face6[1], color);
-            DrawTriangle(renderer, face6[0], color);
-            DrawTriangle(renderer, face6[1], color);
+            SDL_Vertex faces[5][2][3]; // 5 faces * 2 triangles per face
+            InitFaces(faces, front_rect, back_rect, color);
 
-            SDL_Vertex face1[2][3];//two triangles per rectangle, only three faces to show, depending on camera angle
-            NewBlockVertex(front, face1, color);
-            SDL_SetRenderDrawColor(renderer, color_line.r, color_line.g, color_line.b, color_line.a);
-            DrawTriangle(renderer, face1[0], color_line);
-            DrawTriangle(renderer, face1[1], color_line);
+   
+            //draw the left face only if the face is on the left side of the block
+            if (front_rect.x - back_rect.x > 0)
+            {
+                //draw the left face
+                color = (Color){0, 0, 255, 255};
+                DrawTriangle(renderer, faces[0][0], color);
+                DrawTriangle(renderer, faces[0][1], color);
+            }
+            //draw the right face only if the face is on the right side of the block
+            if (front_rect.x - back_rect.x < 0)
+            {
+                //draw the right face
+                color = (Color){255, 255, 0, 255};
+                DrawTriangle(renderer, faces[1][0], color);
+                DrawTriangle(renderer, faces[1][1], color);
+            }
+
+            //draw the up face only if the face is on the up side of the block
+            if (front_rect.y - back_rect.y > 0)
+            {
+                //draw the up face
+                color = (Color){0, 255, 0, 255};
+                DrawTriangle(renderer, faces[2][0], color);
+                DrawTriangle(renderer, faces[2][1], color);
+            }
+
+            //draw the down face only if the face is on the down side of the block
+            if (front_rect.y - back_rect.y < 0)
+            {
+                //draw the down face
+                color = (Color){255, 0, 0, 255};
+                DrawTriangle(renderer, faces[3][0], color);
+                DrawTriangle(renderer, faces[3][1], color);
+            }
+            //draw the front face
+            //set color to white
+            color = (Color){255, 255, 255, 255};
+            DrawTriangle(renderer, faces[4][0], color);
+            DrawTriangle(renderer, faces[4][1], color);
+            //draw the outline of the front face
+
+
+
+
+
+
+            // SDL_Vertex face1[2][3];//two triangles per rectangle, only three faces to show, depending on camera angle
+            // NewBlockVertex(front, face1, color);
+            // SDL_SetRenderDrawColor(renderer, color_line.r, color_line.g, color_line.b, color_line.a);
+            // DrawTriangle(renderer, face1[0], color_line);
+            // DrawTriangle(renderer, face1[1], color_line);
             //render outline of front face
+            color = (Color){0, 0, 255, 255};
             SDL_RenderDrawRect(renderer, &frontOutline);
+            //draw the point vanishing point of the block (based on zoom and offset (0.9 and 1.1))
+            //draw the lines connecting the vanishing point to the corners of the front face
 
 
     }
+    //render the camera position
+    
+    
 }
 /* 
 
