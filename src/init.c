@@ -45,6 +45,7 @@ void initPLayer(player *myPlayer, params *p, Vector2 *prevPos, Vector2 *teleport
 }
 
 
+
 void InitBlocksFromFile(Block blocks[], HitBlock countBox[], int numBlocks[], player myPlayer[], const char *filename)
 {
     FILE *file = fopen(filename, "r");
@@ -119,9 +120,7 @@ void InitBlocksFromFile(Block blocks[], HitBlock countBox[], int numBlocks[], pl
      */ 
         blockIndex++;
     }
-    numBlocks[0] = blockIndex;
-    
-    
+    numBlocks[0] = blockIndex;    
     fclose(file);
 
 }

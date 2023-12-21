@@ -159,9 +159,9 @@ void DrawStats(player myPlayer[], SDL_Renderer *renderer)
 
 void NewTriangleVertex(Vector2 position[3], SDL_Vertex vertices[3], Color color)
 {
-    SDL_Vertex vertex_1 = {{position[0].x, position[0].y}, {color.r, color.g, color.b, color.a}, {1, 1}};
+    SDL_Vertex vertex_1 = {{position[0].x, position[0].y}, {color.r, color.b, color.g, color.a}, {1, 1}};
     SDL_Vertex vertex_2 = {{position[1].x, position[1].y}, {color.r, color.g, color.b, color.a}, {1, 1}};
-    SDL_Vertex vertex_3 = {{position[2].x, position[2].y}, {color.r, color.g, color.b, color.a}, {1, 1}};
+    SDL_Vertex vertex_3 = {{position[2].x, position[2].y}, {color.b, color.g, color.r, color.a}, {1, 1}};
     vertices[0] = vertex_1;
     vertices[1] = vertex_2;
     vertices[2] = vertex_3;
@@ -199,7 +199,31 @@ void DrawPoly(SDL_Renderer *renderer, SDL_Vertex vertices[], int numVertices)
 
 void SortBoxes(__attribute__((unused))Block blocks[], __attribute__((unused))int numBlocks, __attribute__((unused))int cameraX, __attribute__((unused))int cameraY, __attribute__((unused))double zoom)
 {
-    // Get the block distances to the camera
+    // Get the block distances to the camera.
+    double distances[numBlocks];
+    for (int i = 0; i < numBlocks; i++)
+    {
+        distances[i] = sqrt(pow(blocks[i].rect.x - cameraX, 2) + pow(blocks[i].rect.y - cameraY, 2));
+    }
+    // Sort the blocks based on their distance to the camera.
+    for (int i = 0; i < numBlocks; i++)
+    {
+        for (int j = i + 1; j < numBlocks; j++)
+        {
+            if (distances[i] < distances[j])
+            {
+                // Swap the distances
+                double temp = distances[i];
+                distances[i] = distances[j];
+                distances[j] = temp;
+                // Swap the blocks
+                Block tempBlock = blocks[i];
+                blocks[i] = blocks[j];
+                blocks[j] = tempBlock;
+            }
+        }
+    }
+
 }
 
 void SwapFaces(SDL_Vertex faces[5][2][3], int face1, int face2)
@@ -289,6 +313,10 @@ void InitFaces(SDL_Vertex faces[5][2][3], SDL_Rect front_rect, SDL_Rect back_rec
 
 }
 
+    double offsetX = 70;
+    double offsetY = 40;
+    int line_thickness = 1;
+    double zoom_offset = 0.1;
 void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int cameraX, int cameraY, double zoom)
 {
     SortBoxes(blocks, numBlocks, cameraX, cameraY, zoom);
@@ -297,8 +325,6 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
 
             Color color_line;
             Color color;
-            double offsetX = 70;
-            double offsetY = 55;
             if (blocks[i].type == hitbox)
                 color_line = (Color){255, 0, 0, 255};
             else if (blocks[i].type == boidbox)
@@ -307,8 +333,6 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
                 color_line = (Color){0, 255, 0, 255};
             color = (Color){0, 0, 0, 255};
             SDL_SetRenderDrawColor(renderer, color_line.r, color_line.g, color_line.b, color_line.a);
-           int line_thickness = 1;
-           double zoom_offset = 0.1;
            SDL_Rect front_rect = {
                (blocks[i].rect.x - cameraX) * zoom * (1 + zoom_offset) - offsetX,
                 (blocks[i].rect.y - cameraY) * zoom * (1 + zoom_offset) - offsetY,
@@ -327,26 +351,21 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
                 back_rect.w + (line_thickness * 4),
                 back_rect.h + (line_thickness * 4)
             };
-            SDL_Rect frontOutline = {
-                front_rect.x - line_thickness,
-                front_rect.y - line_thickness,
-                front_rect.w + (line_thickness * 4),
-                front_rect.h + (line_thickness * 4)
-            };
+
            SDL_RenderDrawRect(renderer, &backOutline);
             //draw lines connecting the front face to the back face
-            SDL_RenderDrawLine(renderer,
-                backOutline.x, backOutline.y,
-                frontOutline.x, frontOutline.y);
-            SDL_RenderDrawLine(renderer,
-                backOutline.x + backOutline.w, backOutline.y,
-                frontOutline.x + frontOutline.w, frontOutline.y);
-            SDL_RenderDrawLine(renderer,
-                backOutline.x, backOutline.y + backOutline.h,
-                frontOutline.x, frontOutline.y + frontOutline.h);
-            SDL_RenderDrawLine(renderer,
-                backOutline.x + backOutline.w, backOutline.y + backOutline.h,
-                frontOutline.x + frontOutline.w, frontOutline.y + frontOutline.h);
+            // SDL_RenderDrawLine(renderer,
+            //     backOutline.x, backOutline.y,
+            //     frontOutline.x, frontOutline.y);
+            // SDL_RenderDrawLine(renderer,
+            //     backOutline.x + backOutline.w, backOutline.y,
+            //     frontOutline.x + frontOutline.w, frontOutline.y);
+            // SDL_RenderDrawLine(renderer,
+            //     backOutline.x, backOutline.y + backOutline.h,
+            //     frontOutline.x, frontOutline.y + frontOutline.h);
+            // SDL_RenderDrawLine(renderer,
+            //     backOutline.x + backOutline.w, backOutline.y + backOutline.h,
+            //     frontOutline.x + frontOutline.w, frontOutline.y + frontOutline.h);
             SDL_Vertex faces[5][2][3]; // 5 faces * 2 triangles per face
             InitFaces(faces, front_rect, back_rect, color);
 
@@ -359,16 +378,13 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
                 DrawTriangle(renderer, faces[0][0], color);
                 DrawTriangle(renderer, faces[0][1], color);
             }
-            //draw the right face only if the face is on the right side of the block
-            if (front_rect.x - back_rect.x < 0)
+            if ((front_rect.x + front_rect.w) - (back_rect.x + back_rect.w) < 0)
             {
                 //draw the right face
                 color = (Color){255, 255, 0, 255};
                 DrawTriangle(renderer, faces[1][0], color);
                 DrawTriangle(renderer, faces[1][1], color);
             }
-
-            //draw the up face only if the face is on the up side of the block
             if (front_rect.y - back_rect.y > 0)
             {
                 //draw the up face
@@ -376,24 +392,13 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
                 DrawTriangle(renderer, faces[2][0], color);
                 DrawTriangle(renderer, faces[2][1], color);
             }
-
-            //draw the down face only if the face is on the down side of the block
-            if (front_rect.y - back_rect.y < 0)
+            if ((front_rect.y + front_rect.h) - (back_rect.y + back_rect.h) < 0)
             {
                 //draw the down face
                 color = (Color){255, 0, 0, 255};
                 DrawTriangle(renderer, faces[3][0], color);
                 DrawTriangle(renderer, faces[3][1], color);
             }
-            //draw the front face
-            //set color to white
-            color = (Color){255, 255, 255, 255};
-            DrawTriangle(renderer, faces[4][0], color);
-            DrawTriangle(renderer, faces[4][1], color);
-            //draw the outline of the front face
-
-
-
 
 
 
@@ -403,86 +408,13 @@ void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
             // DrawTriangle(renderer, face1[0], color_line);
             // DrawTriangle(renderer, face1[1], color_line);
             //render outline of front face
-            color = (Color){0, 0, 255, 255};
-            SDL_RenderDrawRect(renderer, &frontOutline);
             //draw the point vanishing point of the block (based on zoom and offset (0.9 and 1.1))
             //draw the lines connecting the vanishing point to the corners of the front face
 
 
     }
-    //render the camera position
-    
-    
+
 }
-/* 
-
-void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int cameraX, int cameraY, double zoom)
-{
-    for (int i = 0; i < numBlocks; i++)
-    {
-        // SDL_Rect frontBlock = {
-        //     (blocks[i].rect.x - cameraX) * zoom,
-        //     (blocks[i].rect.y - cameraY) * zoom,
-        //     blocks[i].rect.width * zoom,
-        //     blocks[i].rect.height * zoom
-        // };
-
-        // Parallax effect
-        SDL_Rect backBlock = {
-            (blocks[i].rect.x - cameraX) * zoom * 0.9 + 150,
-            (blocks[i].rect.y - cameraY) * zoom * 0.9 + 70,
-            blocks[i].rect.width * zoom * 0.9,
-            blocks[i].rect.height * zoom * 0.9
-        };
-
-        // Block in front of the front block
-        SDL_Rect frontestBlock = {
-            (blocks[i].rect.x - cameraX) * zoom * 1.1 - 150,
-            (blocks[i].rect.y - cameraY) * zoom * 1.1 - 70,
-            blocks[i].rect.width * zoom * 1.1,
-            blocks[i].rect.height * zoom * 1.1
-
-        };
-        //faces of the cube (connected lines between frontest and back
-
-        Color color;
-        if (blocks[i].type == hitbox)
-            color = (Color){255, 0, 0, 255};
-        else if (blocks[i].type == boidbox)
-            color = (Color){0, 0, 255, 255};
-        else if (blocks[i].type == end)
-            color = (Color){0, 255, 0, 255};
-
-        // Draw the back rect
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-        SDL_RenderDrawRect(renderer, &backBlock);
-
-        // Draw the lines connecting the back and frontest rects
-        SDL_RenderDrawLine(renderer, backBlock.x, backBlock.y, frontestBlock.x, frontestBlock.y);
-        SDL_RenderDrawLine(renderer, backBlock.x + backBlock.w, backBlock.y, frontestBlock.x + frontestBlock.w, frontestBlock.y);
-        SDL_RenderDrawLine(renderer, backBlock.x, backBlock.y + backBlock.h, frontestBlock.x, frontestBlock.y + frontestBlock.h);
-        SDL_RenderDrawLine(renderer, backBlock.x + backBlock.w, backBlock.y + backBlock.h, frontestBlock.x + frontestBlock.w, frontestBlock.y + frontestBlock.h);
-
-        // Create the polygons made from the lines
-        // SDL_Vertex vertices[] = {
-        //     {{backBlock.x, backBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}},
-        //     {{backBlock.x + backBlock.w, backBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}},
-        //     {{frontestBlock.x + frontestBlock.w, frontestBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}},
-        //     {{frontestBlock.x, frontestBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}}
-        // };
-        //draw the polygons
-        // DrawPoly(renderer, vertices, 4);
-
-
-        // Draw the front rect
-        // SDL_RenderDrawRect(renderer, &frontBlock);
-
-        // Draw the frontest rect
-        SDL_RenderDrawRect(renderer, &frontestBlock);
-    
-    }
-}
- */
 
 
 void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Renderer *renderer, HitBlock countBlocks[], int numhitbox, int cameraX, int cameraY, params p[], double zoom, int pause)
@@ -567,6 +499,29 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
     // Draw hitboxes with camera offset and zoom
     // DrawBoxes(countBlocks, numhitbox, renderer, cameraX, cameraY, zoom);
     DrawBoids(boids, renderer, myPlayer, cameraX, cameraY, zoom);
+    for (int i = 0; i < numBlocks; i++)
+    {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderFillRect(renderer, &(SDL_Rect){
+               (blocks[i].rect.x - cameraX) * zoom * (1 + zoom_offset) - offsetX,
+                (blocks[i].rect.y - cameraY) * zoom * (1 + zoom_offset) - offsetY,
+                blocks[i].rect.width * zoom * (1 + zoom_offset),
+                blocks[i].rect.height * zoom * (1 + zoom_offset)});
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            SDL_RenderDrawRect(renderer, &(SDL_Rect){//use the line offset to draw the outline of the block
+               (blocks[i].rect.x - cameraX + line_thickness) * zoom * (1 + zoom_offset) - offsetX,
+                (blocks[i].rect.y - cameraY + line_thickness) * zoom * (1 + zoom_offset) - offsetY,
+                blocks[i].rect.width * zoom * (1 + zoom_offset) - (line_thickness * 2),
+                blocks[i].rect.height * zoom * (1 + zoom_offset) - (line_thickness * 2)});
+            
+            // SDL_RenderDrawRect(renderer, &(SDL_Rect){
+            //    (blocks[i].rect.x - cameraX) * zoom * (1 + zoom_offset) - offsetX,
+            //     (blocks[i].rect.y - cameraY) * zoom * (1 + zoom_offset) - offsetY,
+            //     blocks[i].rect.width * zoom * (1 + zoom_offset),
+            //     blocks[i].rect.height * zoom * (1 + zoom_offset)
+            //   }, (Color){0, 0, 0, 255});
+    
+    }
     DrawStats(myPlayer, renderer);
     DrawHull(myPlayer, renderer, cameraX, cameraY, zoom);
     (void)numhitbox;
