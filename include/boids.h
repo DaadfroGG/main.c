@@ -11,8 +11,8 @@
 
 
 #define numBoids  200// 700 is big for some reasons 27 is the min cap?
-#define screenHeight  900
-#define screenWidth  1800
+#define screenHeight  2000
+#define screenWidth  3000
 
 #define FPS 60
 #define FRAME_DELAY (1000 / FPS)

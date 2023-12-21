@@ -104,30 +104,6 @@ void DrawBoids(Boid boids[], SDL_Renderer *renderer, player myPlayer[], int came
     }
 }
 
-void DrawBoxes(HitBlock countBlocks[], int numhitbox, SDL_Renderer *renderer, int cameraX, int cameraY, double zoom)
-{
-    for (int i = 0; i < numhitbox; i++)
-    {
-        Color color;
-        SDL_Rect rect = {
-            (countBlocks[i].rect.x - cameraX) * zoom ,
-            (countBlocks[i].rect.y - cameraY) * zoom,
-            countBlocks[i].rect.width * zoom,
-            countBlocks[i].rect.height * zoom 
-        };
-
-        if (countBlocks[i].hit > countBlocks[i].capacity)
-        {
-            countBlocks[i].hit = countBlocks[i].capacity;
-        }
-        color.r = mapValue(countBlocks[i].hit, 0, countBlocks[i].capacity, 0, 255);
-        color.g = mapValue(countBlocks[i].hit, 0, countBlocks[i].capacity, 255, 0);
-        color.b = 0;
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-        SDL_RenderDrawRect(renderer, &rect);
-    }
-}
-
 
 void DrawHull(player *myPlayer, SDL_Renderer *renderer, int cameraX, int cameraY, double zoom)
 {
@@ -180,6 +156,100 @@ void DrawStats(player myPlayer[], SDL_Renderer *renderer)
     }
 
 }
+void drawtinytest(SDL_Renderer *renderer)
+{
+    SDL_Vertex vertex_1 = {{10.5, 10.5}, {255, 0, 0, 255}, {1, 1}};
+    SDL_Vertex vertex_2 = {{20.5, 10.5}, {255, 0, 0, 255}, {1, 1}};
+    SDL_Vertex vertex_3 = {{10.5, 20.5}, {255, 0, 0, 255}, {1, 1}};
+    // Put them into array
+
+    SDL_Vertex vertices[] = {
+        vertex_1,
+        vertex_2,
+        vertex_3
+    };
+    // Set renderer color
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    // Render red triangle
+    SDL_RenderGeometry(renderer, NULL, vertices, 3, NULL, 0);
+}
+
+void DrawPoly(SDL_Renderer *renderer, SDL_Vertex vertices[], int numVertices)
+{
+    // Set renderer color
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+    // Render red triangle
+    SDL_RenderGeometry(renderer, NULL, vertices, numVertices, NULL, 0);
+}
+
+void DrawBoxes(Block blocks[], int numBlocks, SDL_Renderer *renderer, int cameraX, int cameraY, double zoom)
+{
+    for (int i = 0; i < numBlocks; i++)
+    {
+        // SDL_Rect frontBlock = {
+        //     (blocks[i].rect.x - cameraX) * zoom,
+        //     (blocks[i].rect.y - cameraY) * zoom,
+        //     blocks[i].rect.width * zoom,
+        //     blocks[i].rect.height * zoom
+        // };
+
+        // Parallax effect
+        SDL_Rect backBlock = {
+            (blocks[i].rect.x - cameraX) * zoom * 0.9 + 150,
+            (blocks[i].rect.y - cameraY) * zoom * 0.9 + 70,
+            blocks[i].rect.width * zoom * 0.9,
+            blocks[i].rect.height * zoom * 0.9
+        };
+
+        // Block in front of the front block
+        SDL_Rect frontestBlock = {
+            (blocks[i].rect.x - cameraX) * zoom * 1.1 - 150,
+            (blocks[i].rect.y - cameraY) * zoom * 1.1 - 70,
+            blocks[i].rect.width * zoom * 1.1,
+            blocks[i].rect.height * zoom * 1.1
+
+        };
+        //faces of the cube (connected lines between frontest and back
+
+        Color color;
+        if (blocks[i].type == hitbox)
+            color = (Color){255, 0, 0, 255};
+        else if (blocks[i].type == boidbox)
+            color = (Color){0, 0, 255, 255};
+        else if (blocks[i].type == end)
+            color = (Color){0, 255, 0, 255};
+
+        // Draw the back rect
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+        SDL_RenderDrawRect(renderer, &backBlock);
+
+        // Draw the lines connecting the back and frontest rects
+        SDL_RenderDrawLine(renderer, backBlock.x, backBlock.y, frontestBlock.x, frontestBlock.y);
+        SDL_RenderDrawLine(renderer, backBlock.x + backBlock.w, backBlock.y, frontestBlock.x + frontestBlock.w, frontestBlock.y);
+        SDL_RenderDrawLine(renderer, backBlock.x, backBlock.y + backBlock.h, frontestBlock.x, frontestBlock.y + frontestBlock.h);
+        SDL_RenderDrawLine(renderer, backBlock.x + backBlock.w, backBlock.y + backBlock.h, frontestBlock.x + frontestBlock.w, frontestBlock.y + frontestBlock.h);
+
+        // Create the polygons made from the lines
+        // SDL_Vertex vertices[] = {
+        //     {{backBlock.x, backBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}},
+        //     {{backBlock.x + backBlock.w, backBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}},
+        //     {{frontestBlock.x + frontestBlock.w, frontestBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}},
+        //     {{frontestBlock.x, frontestBlock.y}, {color.r, color.g, color.b, 255}, {1, 1}}
+        // };
+        //draw the polygons
+        // DrawPoly(renderer, vertices, 4);
+
+
+        // Draw the front rect
+        // SDL_RenderDrawRect(renderer, &frontBlock);
+
+        // Draw the frontest rect
+        SDL_RenderDrawRect(renderer, &frontestBlock);
+    
+    }
+}
+
+
 
 void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Renderer *renderer, HitBlock countBlocks[], int numhitbox, int cameraX, int cameraY, params p[], double zoom, int pause)
 {
@@ -204,14 +274,16 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
         SDL_RenderDrawLine(renderer, -cameraX * zoom, (i * gridSize - cameraY) * zoom, (endGridX * gridSize - cameraX) * zoom, (i * gridSize - cameraY) * zoom);
     }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
     // Draw blocks with camera offset and zoom
+    //cameraX, cameraY, zoom, blocks, numBlocks
+    DrawBoxes(blocks, numBlocks, renderer, cameraX, cameraY, zoom);
+    /*
     for (int i = 0; i < numBlocks; i++)
     {
         SDL_Rect rect = {
-            (blocks[i].rect.x - cameraX)* zoom ,
+            (blocks[i].rect.x - cameraX)* zoom,
             (blocks[i].rect.y - cameraY)* zoom,
             blocks[i].rect.width * zoom,
             blocks[i].rect.height * zoom
@@ -221,14 +293,13 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
         SDL_RenderFillRect(renderer, &rect);
 
-        if (countBlocks[i].type == hitbox)
+        if ( blocks[i].type == hitbox)
             color = (Color){255, 0, 0, 255};
-        else if (countBlocks[i].type == boidbox)
+        else if ( blocks[i].type == boidbox)
             color = (Color){0, 0, 255, 255};
-        else if (countBlocks[i].type == end)
+        else if ( blocks[i].type == end)
             color = (Color){0, 255, 0, 255};
         SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
-
         SDL_RenderDrawRect(renderer, &rect);
         //fill rectangle
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -238,7 +309,7 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
         sprintf(message, "%d", countBlocks[i].hit);
         SDLTest_DrawString(renderer, x, y, message);
     }
-
+    */
     // Draw end message if player is at the end
     float seconds = myPlayer[0].end_time - myPlayer[0].clock;
     seconds /= 1000;
