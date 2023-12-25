@@ -23,13 +23,11 @@ void InitBoids(Boid boids[], player myPlayer[])
 }
 
 
-void initPLayer(player *myPlayer, params *p, Vector2 *prevPos, Vector2 *teleportPos, int *teleport)
+void initPLayer(player *myPlayer, params *p, int *teleport)
 {
     p[0] = (params){1,100, 20, 10, 100};//last one is general speed of boids //100 is the collide value
     myPlayer->speed = (Vector2){ 0, 0 };
     myPlayer->size = 10;
-    prevPos[0] = myPlayer->position;
-    teleportPos[0] = myPlayer->position;
     teleport[0] = 0;
     myPlayer->grounded = 0;
     myPlayer->is_in_block = 0;

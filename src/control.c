@@ -70,7 +70,7 @@ int IsInBlock(Block blocks[], Vector2 *point, int numBlocks)
     return 0;
 }
 
-void Control(Vector2* mousepos, int* teleport, Vector2* teleportPos, player* myPlayer, params* p, int cameraX, int cameraY, Boid boids[], double zoom, Block blocks[], int numBlocks)
+void Control(Vector2* mousepos, int* teleport, player* myPlayer, params* p, int cameraX, int cameraY, Boid boids[], double zoom, Block blocks[], int numBlocks)
 {
     int mouseX, mouseY;
     SDL_GetMouseState(&mouseX, &mouseY);
@@ -163,8 +163,6 @@ void Control(Vector2* mousepos, int* teleport, Vector2* teleportPos, player* myP
     }
     
     (void)teleport;
-    (void)teleportPos;
-    (void)teleportPos;
     (void)p;
     (void)myPlayer;
 }

@@ -125,6 +125,8 @@ void BoidCollision(Boid boids[], HitBlock countBox[], int numBlocks, player myPl
             {
             countBox[j].hit++;
 
+            
+
             // Calculate probability of teleporting out of the block based on permeability
             float teleportProbability = 1.0f - countBox[j].permuability;
             // Generate a random value between 0 and 1

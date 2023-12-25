@@ -10,10 +10,11 @@
 #include <SDL2/SDL_test_font.h>
 
 
-#define numBoids  200// 700 is big for some reasons 27 is the min cap?
+#define numBoids  400// 700 is big for some reasons 27 is the min cap?
 #define screenHeight  1000
 #define screenWidth  1500
 
+#define MAX_TEXTURE 100
 #define FPS 60
 #define FRAME_DELAY (1000 / FPS)
 /* 
@@ -68,6 +69,7 @@ typedef struct HitBlock
     Vector2 size;
     Rectangle rect;
     int hit;
+    double hit_per_frame;
     int capacity;
     double permuability;
     double absorbtion;
@@ -134,7 +136,7 @@ float mapValue(float value, float inputMin, float inputMax, float outputMin, flo
 Vector2 subtractvect(Vector2 a, Vector2 b);
 
 void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Renderer *renderer, HitBlock countBlocks[], int numhitbox, int cameraX, int cameraY, params p[], double zoom, int pause);
-void Control(Vector2* mousepos, int* teleport, Vector2* teleportPos, player* myPlayer, params* p, int cameraX, int cameraY, Boid boids[], double zoom, Block blocks[], int numBlocks);
+void Control(Vector2* mousepos, int* teleport, player* myPlayer, params* p, int cameraX, int cameraY, Boid boids[], double zoom, Block blocks[], int numBlocks);
 void  Physics(player* myPlayer, Block blocks[], HitBlock countBlock[], int numBlocks, Boid boids[]);
 void BoidCollision(Boid boids[], HitBlock countBox[], int numBlocks, player myPlayer[]);
 
@@ -143,7 +145,7 @@ void Movement(player* myPlayer);
 
 
 void InitBoids(Boid boids[], player myPlayer[]);
-void initPLayer(player *myPlayer, params *p, Vector2 *prevPos, Vector2 *teleportPos, int *teleport);
+void initPLayer(player *myPlayer, params *p, int *teleport);
 void InitBlocks(Block *blocks,HitBlock *countBox, int numBlocks[], player Myplayer[]);
 
 void convexHull(Boid boids[], player myPlayer[]);
