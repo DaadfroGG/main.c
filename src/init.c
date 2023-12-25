@@ -23,7 +23,7 @@ void InitBoids(Boid boids[], player myPlayer[])
 }
 
 
-void initPLayer(player *myPlayer, params *p, int *teleport)
+void initPLayer(player *myPlayer, params *p, int *teleport, Game *game)
 {
     p[0] = (params){1,100, 20, 10, 100};//last one is general speed of boids //100 is the collide value
     myPlayer->speed = (Vector2){ 0, 0 };
@@ -31,7 +31,6 @@ void initPLayer(player *myPlayer, params *p, int *teleport)
     teleport[0] = 0;
     myPlayer->grounded = 0;
     myPlayer->is_in_block = 0;
-    
     myPlayer->in_the_end = 0;
     myPlayer->score = 0;
     myPlayer->clock =  SDL_GetTicks();
@@ -39,6 +38,7 @@ void initPLayer(player *myPlayer, params *p, int *teleport)
     myPlayer->gravity = 1;
     myPlayer->shell_count = 0;
     myPlayer->camera_type = 0;
+    myPlayer->position = game->start_pos;
 
 }
 

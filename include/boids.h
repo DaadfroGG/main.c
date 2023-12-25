@@ -10,11 +10,13 @@
 #include <SDL2/SDL_test_font.h>
 
 
-#define numBoids  400// 700 is big for some reasons 27 is the min cap?
+#define numBoids  500// 700 is big for some reasons 27 is the min cap?
+#define numBoidsinverse  1.0/numBoids
+#define	RAND_MAX_INVERSE	1.0/2147483647
 #define screenHeight  1000
 #define screenWidth  1500
-
-#define MAX_TEXTURE 100
+#define MAX_TEXTURES 3
+#define MAX_BLOCKS 600
 #define FPS 60
 #define FRAME_DELAY (1000 / FPS)
 /* 
@@ -118,9 +120,46 @@ typedef struct boidParameters
     int follow_move_speed;
 }params;
 
+typedef struct Game
+{
+    SDL_Window* window;
+    // Renderer
+    SDL_Renderer* renderer;
+    // Distance from the center of the screen to the edge of the screen
+    Vector2 center_distance;
+    // Quit flag
+    short quit;
+    // Frame timing
+    Uint32 frameStart;
+    int frameTime;
+    // Data for the events
+    Vector2 mousepos;
+    // Start position of the player (used for resetting)
+    Vector2 start_pos;
+    // Pointer to the player
+    player player[1];
+    int teleport[1];
+    // Array storing all positions of boids in the level
+    Boid boids[numBoids + 1];
+    params p[1];
+    // Array storing the number of blocks in the level
+    int numBlocks[1];
+    Block blocks[MAX_BLOCKS];
+    HitBlock countBox[MAX_BLOCKS];
+    // Camera position
+    Vector2 camera;
+    Vector2 targetCamera;
+    Vector2 pausecam;
+    // Camera parameters
+    double zoom;
+    int pause;
+    int bool_clement_camera;
+    int camera_switch_timer;
+}Game;
 
 
-void Update(Boid boids[], Vector2 mousepos, params p, int teleport);
+
+void Update(Boid boids[], Vector2 mousepos, params p, int teleport, Game *game);
 unsigned short *get_screen_size(void);
 
 Color colorBoids(Boid* boid);
@@ -145,7 +184,7 @@ void Movement(player* myPlayer);
 
 
 void InitBoids(Boid boids[], player myPlayer[]);
-void initPLayer(player *myPlayer, params *p, int *teleport);
+void initPLayer(player *myPlayer, params *p, int *teleport, Game *game);
 void InitBlocks(Block *blocks,HitBlock *countBox, int numBlocks[], player Myplayer[]);
 
 void convexHull(Boid boids[], player myPlayer[]);

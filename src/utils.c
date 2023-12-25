@@ -2,6 +2,22 @@
 
 // Path: src/utils.c
 
+double fast_sqrt(double x)
+{
+    union {
+        int i;
+        double x;
+    } u;
+    u.x = x;
+    u.i = (1 << 29) + (u.i >> 1) - (1 << 22);
+    return u.x;
+}
+
+double get_dist(double a, double b)//returns the distance between two points, a and b
+{
+    return (fast_sqrt(a * a + b * b));
+}
+
 void moveBoids(Boid *boids, int i)
 {
     if (!boids[i].alive)
@@ -21,10 +37,12 @@ void updateBoidBehavior(Boid *boids, Vector2 mousepos, double cohesion, int i)
     double angleToMouse = atan2(mousepos.y - boids[i].y, mousepos.x - boids[i].x);
     boids[i].angle = (1 - cohesion) * boids[i].angle + cohesion * angleToMouse;
 
-    double distanceToMouse = sqrt(pow(mousepos.x - boids[i].x, 2) + pow(mousepos.y - boids[i].y, 2));
+    double distanceToMouse = get_dist(mousepos.x - boids[i].x, mousepos.y - boids[i].y);
+    // sqrt(pow(mousepos.x - boids[i].x, 2) + pow(mousepos.y - boids[i].y, 2));
 
     boids[i].move_speed = boids[i].move_speed + distanceToMouse/(distanceToMouse + 100);
 }
+
 
 void avoidBoids(Boid *boids, int spacing, int i)
 {
@@ -32,7 +50,7 @@ void avoidBoids(Boid *boids, int spacing, int i)
     {
         if (i != j) 
         {
-            double distance = sqrt(pow(boids[i].x - boids[j].x, 2) + pow(boids[i].y - boids[j].y, 2));
+            double distance = get_dist(boids[i].x - boids[j].x, boids[i].y - boids[j].y);
             if (distance < spacing) 
             {
                 double angle = atan2(boids[i].y - boids[j].y, boids[i].x - boids[j].x);
@@ -68,15 +86,15 @@ void updateFollowing(Boid* boids, int cohesion, int speed, int teleport, int i)
     }
     if (count > 0)
     {
-    centerofmass.x /= numBoids;
-    centerofmass.y /= numBoids;
+    centerofmass.x *= numBoidsinverse;
+    centerofmass.y *= numBoidsinverse;
     boids[i].angle += atan2(centerofmass.y - currentBoid.y, centerofmass.x - currentBoid.x)/4;
     }
     if (teleport)
-        boids[i].move_speed = (rand() % 10000) / 50;
+        boids[i].move_speed = (rand() % 10000) * 0.025;
     else{
-    boids[i].move_speed -= (rand() % 10000) / 5000;
-    boids[i].move_speed += (rand() % 10000) / 5000;
+    boids[i].move_speed -= (rand() % 10000) * 0.0005;
+    boids[i].move_speed += (rand() % 10000) * 0.0005;
     }
     (void)teleport;
 }
@@ -109,7 +127,7 @@ void updateCohesionSpeed(Boid* boids, int cohesion, int i)
 
 }
 
-void Update(Boid boids[], Vector2 mousepos, params p, int teleport)
+void Update(Boid boids[], Vector2 mousepos, params p, int teleport, Game *game)
 {
     for (int i = 0; i < numBoids; i++)
     {
@@ -124,4 +142,5 @@ void Update(Boid boids[], Vector2 mousepos, params p, int teleport)
         avoidBoids(boids, p.avoid_distance, i);
         updateFollowing(boids, p.follow_distance, p.follow_move_speed, teleport, i);
     }
+    convexHull(game->boids, game->player);
 }

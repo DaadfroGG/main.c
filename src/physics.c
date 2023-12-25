@@ -114,7 +114,7 @@ void BoidCollision(Boid boids[], HitBlock countBox[], int numBlocks, player myPl
     // Seed the random number generator
     srand(time(NULL));
     int boidBlockGiven = 0;
-    int boidBlockGive = 1;
+    int boidBlockGive = 20;
     for (int j = 0; j < numBlocks; j++)
     {
         countBox[j].hit = 0;
@@ -130,12 +130,12 @@ void BoidCollision(Boid boids[], HitBlock countBox[], int numBlocks, player myPl
             // Calculate probability of teleporting out of the block based on permeability
             float teleportProbability = 1.0f - countBox[j].permuability;
             // Generate a random value between 0 and 1
-            float randomValueTeleport = (float)rand() / RAND_MAX;
+            float randomValueTeleport = (float)rand() * RAND_MAX_INVERSE;
 
             if (randomValueTeleport > teleportProbability)
             {
                     float absorbtionProbability = 1.0f - countBox[j].absorbtion;
-                    float randomValueAbsorbtion = (float)rand() / RAND_MAX;
+                    float randomValueAbsorbtion = (float)rand() * RAND_MAX_INVERSE;
                     if (randomValueAbsorbtion > absorbtionProbability)
                     {
                         float distanceToLeft = boids[i].x - countBox[j].position.x;
