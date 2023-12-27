@@ -269,19 +269,17 @@ void InitFaces(SDL_Vertex faces[5][2][3], SDL_Rect front_rect, SDL_Rect back_rec
 
 }
 
-    double offsetX = 10;
-    double offsetY = -10;
-    int line_thickness = 1;
-    double zoom_offset = 0.5 ;
-
 void DrawFront(Block blocks[], int numBlocks, SDL_Renderer *renderer, int cameraX, int cameraY, double zoom)
 {
     // SortBoxes(blocks, numBlocks, cameraX, cameraY, zoom);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    offsetY = -10 * zoom;
-    offsetX = 400* zoom;
     
-    zoom_offset = 0.5 *zoom;
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    int mx, my;
+    SDL_GetMouseState(&mx, &my);
+    double zoom_offset = 0.5;
+    double offsetY = screenHeight * zoom * 0.5 * zoom_offset + ((my - screenHeight * 0.5)  * -0.01); // Offset based on a quarter of the screen height
+    double offsetX = screenWidth * zoom * 0.5 * zoom_offset + ((mx - screenWidth * 0.5)  * -0.01);  // Offset based on quarter of the screen width
+    zoom_offset *= zoom;
     for (int i = 0; i < numBlocks; i++)
     {   
 
@@ -348,6 +346,19 @@ void DrawFront(Block blocks[], int numBlocks, SDL_Renderer *renderer, int camera
                 DrawTriangle(renderer, faces[3][0], color);
                 DrawTriangle(renderer, faces[3][1], color);
             }
+            SDL_SetRenderDrawColor(renderer, 0, 0, 60, 10);
+            SDL_Vertex vertices[2][3];
+
+            color = (Color){0, 0, 0, 255};
+            if (blocks[i].type == hitbox)
+                color = (Color){255, 0, 0, 200};
+            else if (blocks[i].type == boidbox)
+                color = (Color){0, 0, 255, 120};
+            else if (blocks[i].type == end)
+                color = (Color){0, 255, 0, 120};
+            NewBlockVertex(front_rect, vertices, color);
+            DrawPoly(renderer, vertices[0], 3);
+            DrawPoly(renderer, vertices[1], 3);
     }
 
 }
@@ -356,10 +367,12 @@ void DrawBack(Block blocks[], int numBlocks, SDL_Renderer *renderer, int cameraX
 {
     // SortBoxes(blocks, numBlocks, cameraX, cameraY, zoom);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    offsetY = -10 * zoom;
-    offsetX = 400* zoom;
-    
-    zoom_offset = 0.5 *zoom;
+    int mx, my;
+    SDL_GetMouseState(&mx, &my);
+    double zoom_offset = 0.5;
+    double offsetY = screenHeight * zoom * 0.5 * zoom_offset + ((my - screenHeight * 0.5)  * -0.01); // Offset based on a quarter of the screen height
+    double offsetX = screenWidth * zoom * 0.5 * zoom_offset + ((mx - screenWidth * 0.5)  * -0.01);  // Offset based on quarter of the screen width
+    zoom_offset *= zoom;
     for (int i = 0; i < numBlocks; i++)
     {   
 
@@ -426,6 +439,8 @@ void DrawBack(Block blocks[], int numBlocks, SDL_Renderer *renderer, int cameraX
                 DrawTriangle(renderer, faces[3][0], color);
                 DrawTriangle(renderer, faces[3][1], color);
             }
+
+
     }
     
 
@@ -484,34 +499,37 @@ void Draw(player myPlayer[], Boid boids[], Block blocks[], int numBlocks, SDL_Re
 
     DrawBoids(boids, renderer, myPlayer, cameraX, cameraY, zoom);
     DrawFront(blocks, numBlocks, renderer, cameraX, cameraY, zoom);
-    for (int i = 0; i < numBlocks; i++)
-    {
-            SDL_SetRenderDrawColor(renderer, 0, 0, 60, 10);
-            SDL_Vertex vertices[2][3];
-            Color color;
-            color = (Color){0, 0, 0, 255};
-            if (blocks[i].type == hitbox)
-                color = (Color){255, 0, 0, 200};
-            else if (blocks[i].type == boidbox)
-                color = (Color){0, 0, 255, 120};
-            else if (blocks[i].type == end)
-                color = (Color){0, 255, 0, 120};
-            NewBlockVertex((SDL_Rect){
-                (blocks[i].rect.x - cameraX) * zoom * (1 + zoom_offset) - offsetX,
-                (blocks[i].rect.y - cameraY) * zoom * (1 + zoom_offset) - offsetY,
-                blocks[i].rect.width * zoom * (1 + zoom_offset),
-                blocks[i].rect.height * zoom * (1 + zoom_offset)
-            }, vertices, color);
-            DrawPoly(renderer, vertices[0], 3);
-            DrawPoly(renderer, vertices[1], 3);
-             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-            char message [100];
-            int x = (blocks[i].rect.x - cameraX)* zoom * (1 + zoom_offset) - offsetX;
-            int y = (blocks[i].rect.y - cameraY)* zoom * (1 + zoom_offset) - offsetY;
-            sprintf(message, "%d", countBlocks[i].hit);
-            SDLTest_DrawString(renderer, x, y, message);
+    // for (int i = 0; i < numBlocks; i++)
+    // {
+    //         double offsetY = 0.5 * zoom; // Offset based on half of the screen height
+    //         double offsetX = 0.5 * zoom;  // Offset based on half of the screen width
+    //         double zoom_offset = 0.1 * zoom;
+    //         SDL_SetRenderDrawColor(renderer, 0, 0, 60, 10);
+    //         SDL_Vertex vertices[2][3];
+    //         Color color;
+    //         color = (Color){0, 0, 0, 255};
+    //         if (blocks[i].type == hitbox)
+    //             color = (Color){255, 0, 0, 200};
+    //         else if (blocks[i].type == boidbox)
+    //             color = (Color){0, 0, 255, 120};
+    //         else if (blocks[i].type == end)
+    //             color = (Color){0, 255, 0, 120};
+    //         NewBlockVertex((SDL_Rect){
+    //             (blocks[i].rect.x - cameraX) * zoom * (1 + zoom_offset) - offsetX,
+    //             (blocks[i].rect.y - cameraY) * zoom * (1 + zoom_offset) - offsetY,
+    //             blocks[i].rect.width * zoom * (1 + zoom_offset),
+    //             blocks[i].rect.height * zoom * (1 + zoom_offset)
+    //         }, vertices, color);
+    //         DrawPoly(renderer, vertices[0], 3);
+    //         DrawPoly(renderer, vertices[1], 3);
+    //          SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    //         char message [100];
+    //         int x = (blocks[i].rect.x - cameraX)* zoom * (1 + zoom_offset) - offsetX;
+    //         int y = (blocks[i].rect.y - cameraY)* zoom * (1 + zoom_offset) - offsetY;
+    //         sprintf(message, "%d", countBlocks[i].hit);
+    //         SDLTest_DrawString(renderer, x, y, message);
 
-    }
+    // }
     DrawStats(myPlayer, renderer);
     DrawHull(myPlayer, renderer, cameraX, cameraY, zoom);
     (void)numhitbox;
